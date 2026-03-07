@@ -150,8 +150,8 @@
     .gallery-cell.filled:hover .gallery-cell-tooltip { display: block; }
 
     #no-reviews { color: #aaa; font-style: italic; }
-    mark { background: #fff3b0; border-radius: 3px; padding: 0 2px; }
 
+    mark { background: #fff3b0; border-radius: 3px; padding: 0 2px; }
     .gpop-overlay {
       display: none; position: fixed; inset: 0;
       backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
@@ -164,13 +164,13 @@
       max-width: 540px; width: 100%; max-height: 85vh; overflow-y: auto;
       box-shadow: 0 12px 40px rgba(0,0,0,0.25); position: relative;
     }
-    .gpop .pop-cover { width: 100%; max-height: 180px; object-fit: contain; border-radius: 8px; margin-bottom: 1rem; }
+    .gpop img { width: 100%; max-height: 180px; object-fit: contain; border-radius: 8px; margin-bottom: 1rem; }
     .gpop h3 { color: #5a3e2b; font-size: 1.25rem; margin-bottom: 0.3rem; }
     .gpop .meta { font-size: 0.82rem; color: #999; margin-bottom: 0.6rem; }
     .gpop .stars-display { color: #f5a623; margin-bottom: 0.8rem; }
     .gpop p { font-size: 0.93rem; line-height: 1.6; white-space: pre-wrap; margin-top: 0.5rem; }
-    .gpop blockquote { border-left: 3px solid #f5a623; padding-left: 1rem; margin-top: 0.6rem; font-style: italic; color: #777; font-size: 0.9rem; white-space: pre-wrap; }
-    .gpop-close { position: absolute; top: 0.9rem; right: 0.9rem; background: none; border: none; font-size: 1.3rem; cursor: pointer; color: #aaa; line-height: 1; }
+    .gpop blockquote { border-left: 3px solid #f5a623; padding-left: 1rem; margin-top: 0.6rem; font-style: italic; color: #777; font-size: 0.9rem; }
+    .gpop-close { position: absolute; top: 0.9rem; right: 0.9rem; background: none; border: none; font-size: 1.3rem; cursor: pointer; color: #aaa; }
     .gpop-close:hover { color: #5a3e2b; }
     .gallery-cell.filled { cursor: pointer; }
   </style>
@@ -567,36 +567,68 @@
     }
 
     function openGpop(idx) {
-      var reviews = JSON.parse(localStorage.getItem('bookReviews') || '[]');
-      var r = reviews[idx];
+      var all = JSON.parse(localStorage.getItem('bookReviews') || '[]');
+      var r = all[idx];
       if (!r) return;
-      var quotes = parseQuotes(r.Quotes);
-      var qHTML = '';
-      for (var i = 0; i < quotes.length; i++) {
-        qHTML += '<blockquote>' + quotes[i] + '<\/blockquote>';
+      var box = document.getElementById('gpopBody');
+      box.innerHTML = '';
+
+      if (r.CoverURL) {
+        var img = document.createElement('img');
+        img.src = r.CoverURL;
+        box.appendChild(img);
       }
-      var body = '';
-      if (r.CoverURL) body += '<img class="pop-cover" src="' + r.CoverURL + '" onerror="this.style.display='none'" />';
-      body += '<h3>' + (r.Title || '') + '<\/h3>';
-      body += '<div class="meta">by ' + (r.Author || '') + ' &nbsp;&middot;&nbsp; ' + (r.Format || '') + ' &nbsp;&middot;&nbsp; ' + (r['Start Date'] || '?') + ' &rarr; ' + (r['End Date'] || '?') + '<\/div>';
-      body += '<div class="stars-display">' + (r.Rating || '') + '<\/div>';
-      if (r.Summary) body += '<p><strong>Summary:<\/strong> ' + r.Summary + '<\/p>';
-      if (r.Thoughts) body += '<p><strong>Thoughts:<\/strong> ' + r.Thoughts + '<\/p>';
-      body += qHTML;
-      document.getElementById('gpopBody').innerHTML = body;
+
+      var h3 = document.createElement('h3');
+      h3.textContent = r.Title || '';
+      box.appendChild(h3);
+
+      var meta = document.createElement('div');
+      meta.className = 'meta';
+      meta.textContent = 'by ' + (r.Author||'') + ' · ' + (r.Format||'') + ' · ' + (r['Start Date']||'?') + ' → ' + (r['End Date']||'?');
+      box.appendChild(meta);
+
+      var stars = document.createElement('div');
+      stars.className = 'stars-display';
+      stars.textContent = r.Rating || '';
+      box.appendChild(stars);
+
+      if (r.Summary) {
+        var p1 = document.createElement('p');
+        p1.innerHTML = '<strong>Summary:<\/strong> ' + r.Summary;
+        box.appendChild(p1);
+      }
+      if (r.Thoughts) {
+        var p2 = document.createElement('p');
+        p2.innerHTML = '<strong>Thoughts:<\/strong> ' + r.Thoughts;
+        box.appendChild(p2);
+      }
+
+      var quotes = parseQuotes(r.Quotes);
+      for (var qi = 0; qi < quotes.length; qi++) {
+        var bq = document.createElement('blockquote');
+        bq.textContent = quotes[qi];
+        box.appendChild(bq);
+      }
+
       document.getElementById('gpopOverlay').classList.add('open');
     }
+
     function closeGpop() {
       document.getElementById('gpopOverlay').classList.remove('open');
     }
-    function gpopOutside(e) {
-      if (e.target === document.getElementById('gpopOverlay')) closeGpop();
-    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+      document.getElementById('gpopOverlay').addEventListener('click', function(e) {
+        if (e.target === this) closeGpop();
+      });
+      document.getElementById('gpopClose').addEventListener('click', closeGpop);
+    });
 </script>
 
-<div class="gpop-overlay" id="gpopOverlay" onclick="gpopOutside(event)">
+<div class="gpop-overlay" id="gpopOverlay">
   <div class="gpop" id="gpopBox">
-    <button class="gpop-close" onclick="closeGpop()">&#x2715;</button>
+    <button class="gpop-close" id="gpopClose">&#x2715;</button>
     <div id="gpopBody"></div>
   </div>
 </div>
