@@ -296,10 +296,11 @@
   function parseQuotes(raw) {
     if (!raw) return [];
     const results = [];
-    const re = /“([^”]*)”|"([^"]*)"/g;
+    // matches both straight "..." and curly \u201c...\u201d quotes
+    let re = /[\u201c""]([^\u201d""]+)[\u201d""]/g;
     let m;
     while ((m = re.exec(raw)) !== null) {
-      const q = (m[1] || m[2] || '').trim();
+      const q = m[1].trim();
       if (q) results.push(q);
     }
     return results;
@@ -308,13 +309,15 @@
   // ── Highlight search term in text ──
   function highlight(text, query) {
     if (!query || !text) return escHtml(text || '');
-    const escaped = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    const re = new RegExp('(' + escaped + ')', 'gi');
-    return escHtml(text).replace(re, '<mark>$1</mark>');
+    const safe = escHtml(text);
+    const esc = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    return safe.replace(new RegExp('(' + esc + ')', 'gi'), '<mark>$1</mark>');
   }
 
   function escHtml(str) {
-    return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    const d = document.createElement('div');
+    d.appendChild(document.createTextNode(str));
+    return d.innerHTML;
   }
 
   // ── Cover preview ──
