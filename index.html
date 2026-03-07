@@ -151,28 +151,6 @@
 
     #no-reviews { color: #aaa; font-style: italic; }
     mark { background: #fff3b0; border-radius: 3px; padding: 0 2px; }
-
-    .gpop-overlay {
-      display: none; position: fixed; inset: 0;
-      backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
-      background: rgba(90,62,43,0.4);
-      z-index: 2000; justify-content: center; align-items: center; padding: 1.5rem;
-    }
-    .gpop-overlay.open { display: flex; }
-    .gpop {
-      background: #fff; border-radius: 16px; padding: 2rem;
-      max-width: 540px; width: 100%; max-height: 85vh; overflow-y: auto;
-      box-shadow: 0 12px 40px rgba(0,0,0,0.25); position: relative;
-    }
-    .gpop .pop-cover { width: 100%; max-height: 180px; object-fit: contain; border-radius: 8px; margin-bottom: 1rem; }
-    .gpop h3 { color: #5a3e2b; font-size: 1.25rem; margin-bottom: 0.3rem; }
-    .gpop .meta { font-size: 0.82rem; color: #999; margin-bottom: 0.6rem; }
-    .gpop .stars-display { color: #f5a623; margin-bottom: 0.8rem; }
-    .gpop p { font-size: 0.93rem; line-height: 1.6; white-space: pre-wrap; margin-top: 0.5rem; }
-    .gpop blockquote { border-left: 3px solid #f5a623; padding-left: 1rem; margin-top: 0.6rem; font-style: italic; color: #777; font-size: 0.9rem; white-space: pre-wrap; }
-    .gpop-close { position: absolute; top: 0.9rem; right: 0.9rem; background: none; border: none; font-size: 1.3rem; cursor: pointer; color: #aaa; line-height: 1; }
-    .gpop-close:hover { color: #5a3e2b; }
-    .gallery-cell.filled { cursor: pointer; }
   </style>
 </head>
 <body>
@@ -334,7 +312,7 @@
         const page = document.createElement('div');
         page.id = 'year-' + year;
         page.className = 'page year-page';
-        page.innerHTML = `<div class="container"><h2>${year} Reading Gallery<\/h2><div class="gallery-grid" id="gallery-${year}"><\/div><\/div>`;
+        page.innerHTML = `<div class="container"><h2>${year} Reading Gallery</h2><div class="gallery-grid" id="gallery-${year}"></div></div>`;
         document.body.appendChild(page);
       });
     }
@@ -359,19 +337,17 @@
         if (i < filtered.length) {
           const r = filtered[i];
           cell.className = 'gallery-cell filled';
-          const rIdx = reviews.findIndex(x => JSON.stringify(x) === JSON.stringify(r));
-          cell.onclick = function() { openGpop(rIdx); };
           if (r.CoverURL) {
             cell.innerHTML = `<img src="${r.CoverURL}" alt="${r.Title}" onerror="this.style.display='none';this.nextSibling.style.display='flex';" />
-              <div class="cell-title" style="display:none">${r.Title || ''}<\/div>
-              <div class="gallery-cell-tooltip">${r.Title || ''}<\/div>`;
+              <div class="cell-title" style="display:none">${r.Title || ''}</div>
+              <div class="gallery-cell-tooltip">${r.Title || ''}</div>`;
           } else {
-            cell.innerHTML = `<div class="cell-title">${r.Title || ''}<\/div>
-              <div class="gallery-cell-tooltip">${r.Author || ''}<\/div>`;
+            cell.innerHTML = `<div class="cell-title">${r.Title || ''}</div>
+              <div class="gallery-cell-tooltip">${r.Author || ''}</div>`;
           }
         } else {
           cell.className = 'gallery-cell';
-          cell.innerHTML = '<span class="cell-empty">+<\/span>';
+          cell.innerHTML = '<span class="cell-empty">+</span>';
         }
         grid.appendChild(cell);
       }
@@ -415,7 +391,7 @@
       const filtered = getFiltered();
       const container = document.getElementById('reviews-list');
       if (filtered.length === 0) {
-        container.innerHTML = '<p id="no-reviews">No reviews found.<\/p>';
+        container.innerHTML = '<p id="no-reviews">No reviews found.</p>';
         document.getElementById('pagination').innerHTML = '';
         return;
       }
@@ -428,29 +404,29 @@
       container.innerHTML = slice.map(r => {
         const origIdx = all.findIndex(x => JSON.stringify(x) === JSON.stringify(r));
         const quotes = parseQuotes(r.Quotes);
-        const quotesHTML = quotes.map(q => `<blockquote>${hlText(q, searchQuery)}<\/blockquote>`).join('');
+        const quotesHTML = quotes.map(q => `<blockquote>${q}</blockquote>`).join('');
         const coverHTML = r.CoverURL ? `<img src="${r.CoverURL}" style="max-height:100px;border-radius:6px;margin-bottom:0.6rem;border:1px solid #ddd;" onerror="this.style.display='none'" />` : '';
         return `
         <div class="review-card">
           <div class="card-actions">
-            <button class="icon-btn" onclick="openEdit(${origIdx})" title="Edit">✏️<\/button>
-            <button class="icon-btn del" onclick="deleteReview(${origIdx})" title="Delete">🗑️<\/button>
-          <\/div>
+            <button class="icon-btn" onclick="openEdit(${origIdx})" title="Edit">✏️</button>
+            <button class="icon-btn del" onclick="deleteReview(${origIdx})" title="Delete">🗑️</button>
+          </div>
           ${coverHTML}
-          <h3>${hlText(r.Title||'Untitled', searchQuery)}<\/h3>
-          <div class="meta">by ${hlText(r.Author||'', searchQuery)} &nbsp;·&nbsp; ${r.Format||''} &nbsp;·&nbsp; ${r['Start Date']||'?'} → ${r['End Date']||'?'}<\/div>
-          <div class="stars-display">${r.Rating||''}<\/div>
-          ${r.Summary ? `<p><strong>Summary:<\/strong> ${hlText(r.Summary, searchQuery)}<\/p>` : ''}
-          ${r.Thoughts ? `<p><strong>Thoughts:<\/strong> ${hlText(r.Thoughts, searchQuery)}<\/p>` : ''}
+          <h3>${r.Title || 'Untitled'}</h3>
+          <div class="meta">by ${hlText(r.Author||'', searchQuery)} &nbsp;·&nbsp; ${r.Format||''} &nbsp;·&nbsp; ${r['Start Date']||'?'} → ${r['End Date']||'?'}</div>
+          <div class="stars-display">${r.Rating||''}</div>
+          ${r.Summary ? `<p><strong>Summary:</strong> ${r.Summary}</p>` : ''}
+          ${r.Thoughts ? `<p><strong>Thoughts:</strong> ${r.Thoughts}</p>` : ''}
           ${quotesHTML}
-        <\/div>`;
+        </div>`;
       }).join('');
 
       const pg = document.getElementById('pagination');
-      let btns = `<button onclick="goPage(${currentPage-1})" ${currentPage===1?'disabled':''}>‹ Prev<\/button>`;
+      let btns = `<button onclick="goPage(${currentPage-1})" ${currentPage===1?'disabled':''}>‹ Prev</button>`;
       for (let i = 1; i <= totalPages; i++)
-        btns += `<button class="${i===currentPage?'active':''}" onclick="goPage(${i})">${i}<\/button>`;
-      btns += `<button onclick="goPage(${currentPage+1})" ${currentPage===totalPages?'disabled':''}>Next ›<\/button>`;
+        btns += `<button class="${i===currentPage?'active':''}" onclick="goPage(${i})">${i}</button>`;
+      btns += `<button onclick="goPage(${currentPage+1})" ${currentPage===totalPages?'disabled':''}>Next ›</button>`;
       pg.innerHTML = btns;
     }
 
@@ -565,40 +541,6 @@
       }
       return result;
     }
-
-    function openGpop(idx) {
-      var reviews = JSON.parse(localStorage.getItem('bookReviews') || '[]');
-      var r = reviews[idx];
-      if (!r) return;
-      var quotes = parseQuotes(r.Quotes);
-      var qHTML = '';
-      for (var i = 0; i < quotes.length; i++) {
-        qHTML += '<blockquote>' + quotes[i] + '<\/blockquote>';
-      }
-      var body = '';
-      if (r.CoverURL) body += '<img class="pop-cover" src="' + r.CoverURL + '" onerror="this.style.display='none'" />';
-      body += '<h3>' + (r.Title || '') + '<\/h3>';
-      body += '<div class="meta">by ' + (r.Author || '') + ' &nbsp;&middot;&nbsp; ' + (r.Format || '') + ' &nbsp;&middot;&nbsp; ' + (r['Start Date'] || '?') + ' &rarr; ' + (r['End Date'] || '?') + '<\/div>';
-      body += '<div class="stars-display">' + (r.Rating || '') + '<\/div>';
-      if (r.Summary) body += '<p><strong>Summary:<\/strong> ' + r.Summary + '<\/p>';
-      if (r.Thoughts) body += '<p><strong>Thoughts:<\/strong> ' + r.Thoughts + '<\/p>';
-      body += qHTML;
-      document.getElementById('gpopBody').innerHTML = body;
-      document.getElementById('gpopOverlay').classList.add('open');
-    }
-    function closeGpop() {
-      document.getElementById('gpopOverlay').classList.remove('open');
-    }
-    function gpopOutside(e) {
-      if (e.target === document.getElementById('gpopOverlay')) closeGpop();
-    }
 </script>
-
-<div class="gpop-overlay" id="gpopOverlay" onclick="gpopOutside(event)">
-  <div class="gpop" id="gpopBox">
-    <button class="gpop-close" onclick="closeGpop()">&#x2715;</button>
-    <div id="gpopBody"></div>
-  </div>
-</div>
 </body>
 </html>
