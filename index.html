@@ -390,13 +390,7 @@
     }
 
     // ── Parse quotes: extract "..." blocks ──
-    function parseQuotes(raw) {
-      if (!raw) return [];
-      const matches = raw.match(/"([^"]+)"/g);
-      if (matches && matches.length > 0) return matches.map(m => m.slice(1,-1).trim());
-      // fallback: split by newline if no quotes found
-      return raw.split('\n').map(q => q.trim()).filter(Boolean);
-    }
+
 
     // ── Render Reviews ──
     function getFiltered() {
@@ -560,10 +554,37 @@
       while (i < safe.length) {
         var pos = lower.indexOf(ql, i);
         if (pos === -1) { result += safe.slice(i); break; }
-        result += safe.slice(i, pos) + '<mark>' + safe.slice(pos, pos + q.length) + '<\/mark>';
+        result += safe.slice(i, pos) + '<mark>' + safe.slice(pos, pos + q.length) + '</mark>';
         i = pos + q.length;
       }
       return result;
+    }
+
+    function parseQuotes(raw) {
+      if (!raw) return [];
+      var results = [];
+      var s = raw;
+      var openChars  = ['"', '“', '‘'];
+      var closeChars = ['"', '”', '’'];
+      var i = 0;
+      while (i < s.length) {
+        var openIdx = -1;
+        var closeChar = '';
+        for (var oi = 0; oi < openChars.length; oi++) {
+          var tmp = s.indexOf(openChars[oi], i);
+          if (tmp !== -1 && (openIdx === -1 || tmp < openIdx)) {
+            openIdx = tmp;
+            closeChar = closeChars[oi];
+          }
+        }
+        if (openIdx === -1) break;
+        var closeIdx = s.indexOf(closeChar, openIdx + 1);
+        if (closeIdx === -1) break;
+        var q = s.slice(openIdx + 1, closeIdx).trim();
+        if (q) results.push(q);
+        i = closeIdx + 1;
+      }
+      return results;
     }
 
     function openGpop(idx) {
@@ -578,7 +599,6 @@
         img.src = r.CoverURL;
         box.appendChild(img);
       }
-
       var h3 = document.createElement('h3');
       h3.textContent = r.Title || '';
       box.appendChild(h3);
@@ -603,14 +623,12 @@
         p2.innerHTML = '<strong>Thoughts:<\/strong> ' + r.Thoughts;
         box.appendChild(p2);
       }
-
       var quotes = parseQuotes(r.Quotes);
       for (var qi = 0; qi < quotes.length; qi++) {
         var bq = document.createElement('blockquote');
         bq.textContent = quotes[qi];
         box.appendChild(bq);
       }
-
       document.getElementById('gpopOverlay').classList.add('open');
     }
 
