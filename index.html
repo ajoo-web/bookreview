@@ -252,18 +252,75 @@
     ::-webkit-scrollbar-track { background: #0f0c08; }
     ::-webkit-scrollbar-thumb { background: #3a2e14; border-radius: 3px; }
     ::-webkit-scrollbar-thumb:hover { background: #6b5020; }
+
+    /* ───────── v2 additions ───────── */
+    .sync-status { font-size: 0.75rem; color: #6a5838; font-style: italic; margin: -0.6rem 0 0.8rem; min-height: 1em; }
+    .sync-status.pending { color: #b8863a; }
+    .sync-status.ok { color: #8b9a6a; }
+
+    .tab-btn:focus-visible, button:focus-visible, select:focus-visible, .gallery-cell:focus-visible { outline: 2px solid #c9a84c; outline-offset: 2px; }
+
+    /* keep star radios keyboard-reachable (was display:none) */
+    .stars { position: relative; }
+    .stars input { display: block; position: absolute; opacity: 0; width: 1px; height: 1px; pointer-events: none; }
+    .stars input:focus-visible + label { outline: 2px solid #c9a84c; border-radius: 3px; }
+
+    .inline { display: flex; gap: 0.5rem; align-items: stretch; }
+    .inline input { flex: 1; min-width: 0; }
+    .btn-secondary {
+      background: #1a1208; color: #c9a84c; border: 1px solid #4a3818; border-radius: 4px;
+      padding: 0.45rem 0.9rem; font-family: 'Cinzel', Georgia, serif; font-size: 0.74rem;
+      letter-spacing: 0.04em; white-space: nowrap; transition: all 0.2s;
+    }
+    .btn-secondary:hover { border-color: #8b6914; background: #231c10; }
+    .btn-secondary:disabled { opacity: 0.5; }
+    .hint { font-size: 0.78rem; color: #6a5838; font-style: italic; margin-top: 0.3rem; min-height: 1em; }
+    .opt { font-weight: normal; color: #7a6a48; }
+
+    .toolbar { display: flex; gap: 0.6rem; flex-wrap: wrap; margin-bottom: 1rem; }
+    .toolbar select { width: auto; flex: 1 1 150px; padding: 0.45rem 0.6rem; font-size: 0.85rem; }
+    .result-count { font-size: 0.8rem; color: #6a5838; font-style: italic; margin-bottom: 0.8rem; }
+    .review-card .cover { max-height: 100px; border-radius: 6px; margin-bottom: 0.6rem; border: 1px solid #3a2e14; display: block; }
+
+    .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 0.8rem; margin-bottom: 1.6rem; }
+    .stat { background: #161008; border: 1px solid #3a2e14; border-radius: 4px; padding: 1rem; text-align: center; }
+    .stat b { display: block; font-family: 'Cinzel', Georgia, serif; font-size: 1.6rem; color: #c9a84c; }
+    .stat span { font-size: 0.78rem; color: #8a7450; }
+    .stats-section { margin-bottom: 1.6rem; }
+    .stats-section h3 { font-family: 'Cinzel', Georgia, serif; color: #d4b870; font-size: 0.95rem; margin-bottom: 0.6rem; letter-spacing: 0.04em; }
+    .bar-row { display: flex; align-items: center; gap: 0.6rem; margin: 0.35rem 0; font-size: 0.85rem; }
+    .bar-label { width: 6rem; flex: none; color: #a08040; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .bar-track { flex: 1; min-width: 0; }
+    .bar { height: 12px; background: #6b5020; border-radius: 2px; min-width: 2px; }
+    .bar-count { color: #c8b48a; width: 2rem; flex: none; }
+    .data-tools { display: flex; gap: 0.6rem; flex-wrap: wrap; border-top: 1px solid #3a2e14; padding-top: 1.2rem; }
+    .gallery-count { font-family: 'IM Fell English', Georgia, serif; font-size: 0.85rem; color: #8a7450; font-style: italic; margin-left: 0.5rem; }
+
+    @media (max-width: 640px) {
+      .header { padding: 1.2rem 1rem 0; }
+      .header h1 { font-size: 1.4rem; }
+      .tabs-wrap { padding: 0 0.5rem; }
+      .tabs { flex-wrap: nowrap; overflow-x: auto; padding-bottom: 1px; }
+      .container { padding: 1rem; }
+      .row, .modal .row { grid-template-columns: 1fr; gap: 0; }
+      .gallery-grid { grid-template-columns: repeat(3, 1fr); }
+      .modal { padding: 1.2rem; }
+      .gpop { padding: 1.2rem; }
+    }
   </style>
 </head>
 <body>
 
   <div class="header">
     <h1>📜My Book Reviews🕰</h1>
+    <div class="sync-status" id="syncStatus" role="status" aria-live="polite"></div>
   </div>
 
   <div class="tabs-wrap">
-    <div class="tabs" id="tabsBar">
-      <button class="tab-btn active" data-tab="home" onclick="showTab('home', this)">Home</button>
-      <button class="tab-btn" data-tab="reviews" onclick="showTab('reviews', this)">All Reviews</button>
+    <div class="tabs" id="tabsBar" role="tablist">
+      <button class="tab-btn active" role="tab" aria-selected="true" data-tab="home">Home</button>
+      <button class="tab-btn" role="tab" aria-selected="false" data-tab="reviews">All Reviews</button>
+      <button class="tab-btn" role="tab" aria-selected="false" data-tab="stats">Stats</button>
     </div>
   </div>
 
@@ -271,49 +328,53 @@
   <div id="home" class="page active">
     <div class="container">
       <form id="reviewForm">
-        <label>Title</label>
-        <input type="text" name="Title" required placeholder="e.g. Pride and Prejudice" />
+        <label for="f-title">Title</label>
+        <input type="text" id="f-title" name="Title" required placeholder="e.g. Pride and Prejudice" />
 
-        <label>Book Cover Image URL <span style="font-weight:normal;color:#aaa">(optional)</span></label>
-        <input type="url" name="CoverURL" id="coverURLInput" placeholder="https://..." oninput="previewCover(this.value)" />
+        <label for="coverURLInput">Book Cover Image URL <span class="opt">(optional)</span></label>
+        <div class="inline">
+          <input type="url" name="CoverURL" id="coverURLInput" placeholder="https://..." />
+          <button type="button" class="btn-secondary" id="findCoverBtn">🔎 Find cover</button>
+        </div>
+        <div class="hint" id="coverHint"></div>
         <img id="cover-preview" alt="Cover preview" />
 
-        <label>Author</label>
-        <input type="text" name="Author" required placeholder="e.g. Jane Austen" />
+        <label for="f-author">Author</label>
+        <input type="text" id="f-author" name="Author" required placeholder="e.g. Jane Austen" />
 
-        <label>Rating</label>
-        <div class="stars">
-          <input type="radio" name="Rating" id="s5" value="⭐⭐⭐⭐⭐"/><label for="s5">★</label>
-          <input type="radio" name="Rating" id="s4" value="⭐⭐⭐⭐"/><label for="s4">★</label>
-          <input type="radio" name="Rating" id="s3" value="⭐⭐⭐"/><label for="s3">★</label>
-          <input type="radio" name="Rating" id="s2" value="⭐⭐"/><label for="s2">★</label>
-          <input type="radio" name="Rating" id="s1" value="⭐"/><label for="s1">★</label>
+        <label id="rating-label">Rating</label>
+        <div class="stars" role="radiogroup" aria-labelledby="rating-label">
+          <input type="radio" name="Rating" id="s5" value="⭐⭐⭐⭐⭐"/><label for="s5" title="5 stars">★</label>
+          <input type="radio" name="Rating" id="s4" value="⭐⭐⭐⭐"/><label for="s4" title="4 stars">★</label>
+          <input type="radio" name="Rating" id="s3" value="⭐⭐⭐"/><label for="s3" title="3 stars">★</label>
+          <input type="radio" name="Rating" id="s2" value="⭐⭐"/><label for="s2" title="2 stars">★</label>
+          <input type="radio" name="Rating" id="s1" value="⭐"/><label for="s1" title="1 star">★</label>
         </div>
 
-        <label>Format</label>
-        <select name="Format">
+        <label for="f-format">Format</label>
+        <select id="f-format" name="Format">
           <option value="Print">📖 Print</option>
           <option value="Audio">🎧 Audiobook</option>
           <option value="eBook">📱 eBook</option>
         </select>
 
         <div class="row">
-          <div><label>Start Date</label><input name="Start Date" type="date"/></div>
-          <div><label>End Date</label><input name="End Date" type="date"/></div>
+          <div><label for="f-start">Start Date</label><input id="f-start" name="Start Date" type="date"/></div>
+          <div><label for="f-end">End Date</label><input id="f-end" name="End Date" type="date"/></div>
         </div>
 
-        <label>Summary</label>
-        <textarea name="Summary" placeholder="What is the book about?"></textarea>
+        <label for="f-summary">Summary</label>
+        <textarea id="f-summary" name="Summary" placeholder="What is the book about?"></textarea>
 
-        <label>My Thoughts</label>
-        <textarea name="Thoughts" placeholder="Your personal reflection..."></textarea>
+        <label for="f-thoughts">My Thoughts</label>
+        <textarea id="f-thoughts" name="Thoughts" placeholder="Your personal reflection..."></textarea>
 
-        <label>Favorite Quotes <span style="font-weight:normal;color:#aaa">(wrap each quote in " ")</span></label>
-        <textarea name="Quotes" placeholder='"Quote one here"
+        <label for="f-quotes">Favorite Quotes <span class="opt">(wrap each quote in " ")</span></label>
+        <textarea id="f-quotes" name="Quotes" placeholder='"Quote one here"
 "Quote two here"' style="min-height:120px;"></textarea>
 
         <button type="submit">Save Review</button>
-        <div id="status"></div>
+        <div id="status" role="status" aria-live="polite"></div>
       </form>
     </div>
   </div>
@@ -322,412 +383,109 @@
   <div id="reviews" class="page">
     <div class="container">
       <div class="search-wrap">
-        <input type="text" id="searchInput" placeholder="🔍 Search by title, author, or keyword..." oninput="onSearch()" />
+        <input type="text" id="searchInput" aria-label="Search reviews" placeholder="🔍 Search by title, author, or keyword..." />
       </div>
+      <div class="toolbar">
+        <select id="sortSelect" aria-label="Sort reviews">
+          <option value="newest">Sort: Newest added</option>
+          <option value="oldest">Sort: Oldest added</option>
+          <option value="finished">Sort: Recently finished</option>
+          <option value="high">Sort: Highest rated</option>
+          <option value="low">Sort: Lowest rated</option>
+          <option value="title">Sort: Title A–Z</option>
+        </select>
+        <select id="ratingFilter" aria-label="Filter by rating">
+          <option value="">Any rating</option>
+          <option value="5">⭐⭐⭐⭐⭐</option>
+          <option value="4">⭐⭐⭐⭐</option>
+          <option value="3">⭐⭐⭐</option>
+          <option value="2">⭐⭐</option>
+          <option value="1">⭐</option>
+          <option value="0">Unrated</option>
+        </select>
+        <select id="formatFilter" aria-label="Filter by format">
+          <option value="">Any format</option>
+          <option value="Print">📖 Print</option>
+          <option value="Audio">🎧 Audiobook</option>
+          <option value="eBook">📱 eBook</option>
+        </select>
+      </div>
+      <div class="result-count" id="resultCount"></div>
       <div id="reviews-list"></div>
       <div class="pagination" id="pagination"></div>
     </div>
   </div>
 
+  <!-- Stats Page -->
+  <div id="stats" class="page">
+    <div class="container">
+      <h2>Reading Stats</h2>
+      <div id="statsBody"></div>
+      <div class="data-tools">
+        <button type="button" class="btn-secondary" id="exportBtn">⬇ Export backup (JSON)</button>
+        <button type="button" class="btn-secondary" id="importBtn">⬆ Import backup</button>
+        <button type="button" class="btn-secondary" id="refreshBtn">↻ Refresh from Sheet</button>
+        <input type="file" id="importFile" accept="application/json,.json" hidden />
+      </div>
+      <div class="hint" id="dataHint"></div>
+    </div>
+  </div>
+
   <!-- Year pages injected dynamically -->
+  <div id="yearPages"></div>
 
   <!-- Edit Modal -->
   <div class="modal-overlay" id="editModal">
-    <div class="modal">
-      <button class="modal-close" onclick="closeModal()">✕</button>
-      <h3>✏️ Edit Review</h3>
-      <input type="hidden" id="edit-idx" />
-      <label>Title</label><input type="text" id="edit-Title" />
-      <label>Book Cover Image URL</label><input type="url" id="edit-CoverURL" />
-      <label>Author</label><input type="text" id="edit-Author" />
-      <label>Rating</label>
-      <div class="stars" id="edit-stars">
-        <input type="radio" name="editRating" id="es5" value="⭐⭐⭐⭐⭐"/><label for="es5">★</label>
-        <input type="radio" name="editRating" id="es4" value="⭐⭐⭐⭐"/><label for="es4">★</label>
-        <input type="radio" name="editRating" id="es3" value="⭐⭐⭐"/><label for="es3">★</label>
-        <input type="radio" name="editRating" id="es2" value="⭐⭐"/><label for="es2">★</label>
-        <input type="radio" name="editRating" id="es1" value="⭐"/><label for="es1">★</label>
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="editHeading">
+      <button class="modal-close" id="editClose" aria-label="Close">✕</button>
+      <h3 id="editHeading">✏️ Edit Review</h3>
+      <input type="hidden" id="edit-id" />
+      <label for="edit-Title">Title</label><input type="text" id="edit-Title" />
+      <label for="edit-CoverURL">Book Cover Image URL</label>
+      <div class="inline">
+        <input type="url" id="edit-CoverURL" />
+        <button type="button" class="btn-secondary" id="editFindCoverBtn">🔎 Find cover</button>
       </div>
-      <label>Format</label>
+      <div class="hint" id="editCoverHint"></div>
+      <label for="edit-Author">Author</label><input type="text" id="edit-Author" />
+      <label id="edit-rating-label">Rating</label>
+      <div class="stars" id="edit-stars" role="radiogroup" aria-labelledby="edit-rating-label">
+        <input type="radio" name="editRating" id="es5" value="⭐⭐⭐⭐⭐"/><label for="es5" title="5 stars">★</label>
+        <input type="radio" name="editRating" id="es4" value="⭐⭐⭐⭐"/><label for="es4" title="4 stars">★</label>
+        <input type="radio" name="editRating" id="es3" value="⭐⭐⭐"/><label for="es3" title="3 stars">★</label>
+        <input type="radio" name="editRating" id="es2" value="⭐⭐"/><label for="es2" title="2 stars">★</label>
+        <input type="radio" name="editRating" id="es1" value="⭐"/><label for="es1" title="1 star">★</label>
+      </div>
+      <label for="edit-Format">Format</label>
       <select id="edit-Format">
         <option value="Print">📖 Print</option>
         <option value="Audio">🎧 Audiobook</option>
         <option value="eBook">📱 eBook</option>
       </select>
       <div class="row">
-        <div><label>Start Date</label><input type="date" id="edit-StartDate" /></div>
-        <div><label>End Date</label><input type="date" id="edit-EndDate" /></div>
+        <div><label for="edit-StartDate">Start Date</label><input type="date" id="edit-StartDate" /></div>
+        <div><label for="edit-EndDate">End Date</label><input type="date" id="edit-EndDate" /></div>
       </div>
-      <label>Summary</label><textarea id="edit-Summary"></textarea>
-      <label>My Thoughts</label><textarea id="edit-Thoughts"></textarea>
-      <label>Favorite Quotes <span style="font-weight:normal;color:#aaa">(wrap each in " ")</span></label>
+      <label for="edit-Summary">Summary</label><textarea id="edit-Summary"></textarea>
+      <label for="edit-Thoughts">My Thoughts</label><textarea id="edit-Thoughts"></textarea>
+      <label for="edit-Quotes">Favorite Quotes <span class="opt">(wrap each in " ")</span></label>
       <textarea id="edit-Quotes" style="min-height:100px;"></textarea>
+      <div class="hint" id="editError" role="alert"></div>
       <div class="modal-actions">
-        <button class="btn-cancel" onclick="closeModal()">Cancel</button>
-        <button class="btn-save" onclick="saveEdit()">Save & Sync to Sheets</button>
+        <button type="button" class="btn-cancel" id="editCancel">Cancel</button>
+        <button type="button" class="btn-save" id="editSave">Save Changes</button>
       </div>
     </div>
   </div>
 
-  <script>
-    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxoYnHVYOTRg3ttWnFkitldJYy694xSjqOgn_4veQq657d44vpqfI-oyFWKJka5WSgzSA/exec';
-    const PER_PAGE = 3;
-    let currentPage = 1;
-    let searchQuery = '';
-    let activeTab = 'home';
-
-    // ── Cover preview ──
-    function previewCover(url) {
-      const img = document.getElementById('cover-preview');
-      if (url) { img.src = url; img.style.display = 'block'; }
-      else { img.style.display = 'none'; }
-    }
-
-    // ── Year tabs ──
-    function getYearsFromReviews() {
-      const reviews = JSON.parse(localStorage.getItem('bookReviews') || '[]');
-      const years = new Set();
-      reviews.forEach(r => {
-        if (r['Start Date']) years.add(r['Start Date'].substring(0,4));
-        if (r['End Date']) years.add(r['End Date'].substring(0,4));
-      });
-      return Array.from(years).sort();
-    }
-
-    function rebuildYearTabs() {
-      const bar = document.getElementById('tabsBar');
-      // Remove old year tabs
-      bar.querySelectorAll('.year-tab').forEach(t => t.remove());
-      document.querySelectorAll('.year-page').forEach(p => p.remove());
-
-      getYearsFromReviews().forEach(year => {
-        // Tab button
-        const btn = document.createElement('button');
-        btn.className = 'tab-btn year-tab';
-        btn.dataset.tab = 'year-' + year;
-        btn.textContent = year;
-        btn.onclick = function() { showTab('year-' + year, this); };
-        bar.appendChild(btn);
-
-        // Page div
-        const page = document.createElement('div');
-        page.id = 'year-' + year;
-        page.className = 'page year-page';
-        page.innerHTML = `<div class="container"><h2>${year} Reading Gallery<\/h2><div class="gallery-grid" id="gallery-${year}"><\/div><\/div>`;
-        document.body.appendChild(page);
-      });
-    }
-
-    function renderGallery(year) {
-      const reviews = JSON.parse(localStorage.getItem('bookReviews') || '[]');
-      const filtered = reviews.filter(r =>
-        (r['Start Date'] && r['Start Date'].startsWith(year)) ||
-        (r['End Date'] && r['End Date'].startsWith(year))
-      ).sort((a,b) => {
-        const da = a['End Date'] || a['Start Date'] || '';
-        const db = b['End Date'] || b['Start Date'] || '';
-        return da.localeCompare(db);
-      });
-
-      const grid = document.getElementById('gallery-' + year);
-      if (!grid) return;
-      const TOTAL = 40; // 4 cols x 10 rows
-      grid.innerHTML = '';
-      for (let i = 0; i < TOTAL; i++) {
-        const cell = document.createElement('div');
-        if (i < filtered.length) {
-          const r = filtered[i];
-          cell.className = 'gallery-cell filled';
-          const rIdx = reviews.findIndex(x => JSON.stringify(x) === JSON.stringify(r));
-          cell.onclick = function() { openGpop(rIdx); };
-          if (r.CoverURL) {
-            cell.innerHTML = `<img src="${r.CoverURL}" alt="${r.Title}" onerror="this.style.display='none';this.nextSibling.style.display='flex';" />
-              <div class="cell-title" style="display:none">${r.Title || ''}<\/div>
-              <div class="gallery-cell-tooltip">${r.Title || ''}<\/div>`;
-          } else {
-            cell.innerHTML = `<div class="cell-title">${r.Title || ''}<\/div>
-              <div class="gallery-cell-tooltip">${r.Author || ''}<\/div>`;
-          }
-        } else {
-          cell.className = 'gallery-cell';
-          cell.innerHTML = '<span class="cell-empty">+<\/span>';
-        }
-        grid.appendChild(cell);
-      }
-    }
-
-    // ── Tab Navigation ──
-    function showTab(tab, btnEl) {
-      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-      const page = document.getElementById(tab);
-      if (page) page.classList.add('active');
-      if (btnEl) btnEl.classList.add('active');
-      activeTab = tab;
-      if (tab === 'reviews') { currentPage = 1; renderReviews(); }
-      if (tab.startsWith('year-')) { renderGallery(tab.replace('year-', '')); }
-    }
-
-    // ── Parse quotes: extract "..." blocks ──
-
-
-    // ── Render Reviews ──
-    function getFiltered() {
-      const all = JSON.parse(localStorage.getItem('bookReviews') || '[]').slice().reverse();
-      if (!searchQuery) return all;
-      const q = searchQuery.toLowerCase();
-      return all.filter(r =>
-        (r.Title||'').toLowerCase().includes(q) ||
-        (r.Author||'').toLowerCase().includes(q) ||
-        (r.Summary||'').toLowerCase().includes(q) ||
-        (r.Thoughts||'').toLowerCase().includes(q)
-      );
-    }
-
-    function renderReviews() {
-      const filtered = getFiltered();
-      const container = document.getElementById('reviews-list');
-      if (filtered.length === 0) {
-        container.innerHTML = '<p id="no-reviews">No reviews found.<\/p>';
-        document.getElementById('pagination').innerHTML = '';
-        return;
-      }
-      const totalPages = Math.ceil(filtered.length / PER_PAGE);
-      if (currentPage > totalPages) currentPage = totalPages;
-      const start = (currentPage - 1) * PER_PAGE;
-      const slice = filtered.slice(start, start + PER_PAGE);
-      const all = JSON.parse(localStorage.getItem('bookReviews') || '[]');
-
-      container.innerHTML = slice.map(r => {
-        const origIdx = all.findIndex(x => JSON.stringify(x) === JSON.stringify(r));
-        const quotes = parseQuotes(r.Quotes);
-        const quotesHTML = quotes.map(q => `<blockquote>${hlText(q, searchQuery)}<\/blockquote>`).join('');
-        const coverHTML = r.CoverURL ? `<img src="${r.CoverURL}" style="max-height:100px;border-radius:6px;margin-bottom:0.6rem;border:1px solid #ddd;" onerror="this.style.display='none'" />` : '';
-        return `
-        <div class="review-card">
-          <div class="card-actions">
-            <button class="icon-btn" onclick="openEdit(${origIdx})" title="Edit">✏️<\/button>
-            <button class="icon-btn del" onclick="deleteReview(${origIdx})" title="Delete">🗑️<\/button>
-          <\/div>
-          ${coverHTML}
-          <h3>${hlText(r.Title||'Untitled', searchQuery)}<\/h3>
-          <div class="meta">by ${hlText(r.Author||'', searchQuery)} &nbsp;·&nbsp; ${r.Format||''} &nbsp;·&nbsp; ${r['Start Date']||'?'} → ${r['End Date']||'?'}<\/div>
-          <div class="stars-display">${r.Rating||''}<\/div>
-          ${r.Summary ? `<p><strong>Summary:<\/strong> ${hlText(r.Summary, searchQuery)}<\/p>` : ''}
-          ${r.Thoughts ? `<p><strong>Thoughts:<\/strong> ${hlText(r.Thoughts, searchQuery)}<\/p>` : ''}
-          ${quotesHTML}
-        <\/div>`;
-      }).join('');
-
-      const pg = document.getElementById('pagination');
-      let btns = `<button onclick="goPage(${currentPage-1})" ${currentPage===1?'disabled':''}>‹ Prev<\/button>`;
-      for (let i = 1; i <= totalPages; i++)
-        btns += `<button class="${i===currentPage?'active':''}" onclick="goPage(${i})">${i}<\/button>`;
-      btns += `<button onclick="goPage(${currentPage+1})" ${currentPage===totalPages?'disabled':''}>Next ›<\/button>`;
-      pg.innerHTML = btns;
-    }
-
-    function goPage(n) { currentPage = n; renderReviews(); window.scrollTo(0,0); }
-    function onSearch() { searchQuery = document.getElementById('searchInput').value; currentPage = 1; renderReviews(); }
-
-    function deleteReview(idx) {
-      if (!confirm('Delete this review?')) return;
-      const reviews = JSON.parse(localStorage.getItem('bookReviews') || '[]');
-      reviews.splice(idx, 1);
-      localStorage.setItem('bookReviews', JSON.stringify(reviews));
-      rebuildYearTabs();
-      renderReviews();
-    }
-
-    // ── Edit Modal ──
-    function openEdit(idx) {
-      const reviews = JSON.parse(localStorage.getItem('bookReviews') || '[]');
-      const r = reviews[idx];
-      document.getElementById('edit-idx').value = idx;
-      document.getElementById('edit-Title').value = r.Title || '';
-      document.getElementById('edit-CoverURL').value = r.CoverURL || '';
-      document.getElementById('edit-Author').value = r.Author || '';
-      document.getElementById('edit-Format').value = r.Format || 'Print';
-      document.getElementById('edit-StartDate').value = r['Start Date'] || '';
-      document.getElementById('edit-EndDate').value = r['End Date'] || '';
-      document.getElementById('edit-Summary').value = r.Summary || '';
-      document.getElementById('edit-Thoughts').value = r.Thoughts || '';
-      document.getElementById('edit-Quotes').value = r.Quotes || '';
-      // Set rating
-      document.querySelectorAll('input[name="editRating"]').forEach(el => {
-        el.checked = el.value === r.Rating;
-      });
-      document.getElementById('editModal').classList.add('open');
-    }
-
-    function closeModal() { document.getElementById('editModal').classList.remove('open'); }
-
-    function saveEdit() {
-      const idx = parseInt(document.getElementById('edit-idx').value);
-      const reviews = JSON.parse(localStorage.getItem('bookReviews') || '[]');
-      const ratingEl = document.querySelector('input[name="editRating"]:checked');
-      const updated = {
-        Title: document.getElementById('edit-Title').value,
-        CoverURL: document.getElementById('edit-CoverURL').value,
-        Author: document.getElementById('edit-Author').value,
-        Rating: ratingEl ? ratingEl.value : '',
-        Format: document.getElementById('edit-Format').value,
-        'Start Date': document.getElementById('edit-StartDate').value,
-        'End Date': document.getElementById('edit-EndDate').value,
-        Summary: document.getElementById('edit-Summary').value,
-        Thoughts: document.getElementById('edit-Thoughts').value,
-        Quotes: document.getElementById('edit-Quotes').value,
-      };
-      reviews[idx] = updated;
-      localStorage.setItem('bookReviews', JSON.stringify(reviews));
-      closeModal();
-      rebuildYearTabs();
-      renderReviews();
-
-      // Sync to Sheets as new entry
-      const params = new URLSearchParams(updated).toString();
-      fetch(SCRIPT_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: params, mode: 'no-cors', redirect: 'follow'
-      });
-    }
-
-    // ── Form Submit ──
-    document.getElementById('reviewForm').addEventListener('submit', function(e) {
-      e.preventDefault();
-      const status = document.getElementById('status');
-      status.textContent = '💾 Saving...';
-      const data = new FormData(this);
-      const entry = Object.fromEntries(data.entries());
-      const reviews = JSON.parse(localStorage.getItem('bookReviews') || '[]');
-      reviews.push(entry);
-      localStorage.setItem('bookReviews', JSON.stringify(reviews));
-      rebuildYearTabs();
-
-      const params = new URLSearchParams(entry).toString();
-      fetch(SCRIPT_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: params, mode: 'no-cors', redirect: 'follow'
-      })
-        .then(() => { status.textContent = '✅ Review saved!'; })
-        .catch(() => { status.textContent = '⚠️ Saved locally. Sheets sync failed.'; });
-      this.reset();
-      document.getElementById('cover-preview').style.display = 'none';
-    });
-
-    // ── Init ──
-    rebuildYearTabs();
-  
-    function hlText(text, q) {
-      if (!text) return text;
-      var d = document.createElement('div');
-      d.appendChild(document.createTextNode(text));
-      var safe = d.innerHTML;
-      if (!q) return safe;
-      var lower = safe.toLowerCase();
-      var ql = q.toLowerCase();
-      var result = '';
-      var i = 0;
-      while (i < safe.length) {
-        var pos = lower.indexOf(ql, i);
-        if (pos === -1) { result += safe.slice(i); break; }
-        result += safe.slice(i, pos) + '<mark>' + safe.slice(pos, pos + q.length) + '</mark>';
-        i = pos + q.length;
-      }
-      return result;
-    }
-
-    function parseQuotes(raw) {
-      if (!raw) return [];
-      var results = [];
-      var s = raw;
-      var openChars  = ['"', '“', '‘'];
-      var closeChars = ['"', '”', '’'];
-      var i = 0;
-      while (i < s.length) {
-        var openIdx = -1;
-        var closeChar = '';
-        for (var oi = 0; oi < openChars.length; oi++) {
-          var tmp = s.indexOf(openChars[oi], i);
-          if (tmp !== -1 && (openIdx === -1 || tmp < openIdx)) {
-            openIdx = tmp;
-            closeChar = closeChars[oi];
-          }
-        }
-        if (openIdx === -1) break;
-        var closeIdx = s.indexOf(closeChar, openIdx + 1);
-        if (closeIdx === -1) break;
-        var q = s.slice(openIdx + 1, closeIdx).trim();
-        if (q) results.push(q);
-        i = closeIdx + 1;
-      }
-      return results;
-    }
-
-    function openGpop(idx) {
-      var all = JSON.parse(localStorage.getItem('bookReviews') || '[]');
-      var r = all[idx];
-      if (!r) return;
-      var box = document.getElementById('gpopBody');
-      box.innerHTML = '';
-
-      if (r.CoverURL) {
-        var img = document.createElement('img');
-        img.src = r.CoverURL;
-        box.appendChild(img);
-      }
-      var h3 = document.createElement('h3');
-      h3.textContent = r.Title || '';
-      box.appendChild(h3);
-
-      var meta = document.createElement('div');
-      meta.className = 'meta';
-      meta.textContent = 'by ' + (r.Author||'') + ' · ' + (r.Format||'') + ' · ' + (r['Start Date']||'?') + ' → ' + (r['End Date']||'?');
-      box.appendChild(meta);
-
-      var stars = document.createElement('div');
-      stars.className = 'stars-display';
-      stars.textContent = r.Rating || '';
-      box.appendChild(stars);
-
-      if (r.Summary) {
-        var p1 = document.createElement('p');
-        p1.innerHTML = '<strong>Summary:<\/strong> ' + r.Summary;
-        box.appendChild(p1);
-      }
-      if (r.Thoughts) {
-        var p2 = document.createElement('p');
-        p2.innerHTML = '<strong>Thoughts:<\/strong> ' + r.Thoughts;
-        box.appendChild(p2);
-      }
-      var quotes = parseQuotes(r.Quotes);
-      for (var qi = 0; qi < quotes.length; qi++) {
-        var bq = document.createElement('blockquote');
-        bq.textContent = quotes[qi];
-        box.appendChild(bq);
-      }
-      document.getElementById('gpopOverlay').classList.add('open');
-    }
-
-    function closeGpop() {
-      document.getElementById('gpopOverlay').classList.remove('open');
-    }
-
-    document.addEventListener('DOMContentLoaded', function() {
-      document.getElementById('gpopOverlay').addEventListener('click', function(e) {
-        if (e.target === this) closeGpop();
-      });
-      document.getElementById('gpopClose').addEventListener('click', closeGpop);
-    });
-</script>
-
-<div class="gpop-overlay" id="gpopOverlay">
-  <div class="gpop" id="gpopBox">
-    <button class="gpop-close" id="gpopClose">&#x2715;</button>
-    <div id="gpopBody"></div>
+  <!-- Gallery popout -->
+  <div class="gpop-overlay" id="gpopOverlay">
+    <div class="gpop" id="gpopBox" role="dialog" aria-modal="true" aria-label="Review details">
+      <button class="gpop-close" id="gpopClose" aria-label="Close">&#x2715;</button>
+      <div id="gpopBody"></div>
+    </div>
   </div>
-</div>
+
+  <script src="app.js"></script>
 </body>
 </html>
